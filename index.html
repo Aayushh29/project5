@@ -5,8 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geoweb App</title>
+
+    <!-- Main styles -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- MQTT client library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+
+    <!-- Leaflet for maps -->
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 </head>
@@ -14,6 +20,7 @@
 <body>
     <h2>Geoweb App</h2>
 
+    <!-- MQTT Connection Settings -->
     <div class="form-group">
         <label>MQTT Host:</label>
         <input id="host" value="test.mosquitto.org" placeholder="test.mosquitto.org">
@@ -21,6 +28,7 @@
         <label>Port:</label>
         <input id="port" value="8081" placeholder="8080">
 
+        <!-- Options to choose between ws or wss -->
         <div class="radio-group">
             <input type="radio" id="ws" name="ssl" value="false">
             <label class="radio-label" for="ws">ws</label>
@@ -29,24 +37,28 @@
             <label class="radio-label" for="wss">wss</label>
         </div>
 
-
+        <!-- Connect / Disconnect buttons -->
         <button id="start" type="button">Start</button>
         <button id="end" type="button">End</button>
     </div>
 
+    <!-- MQTT Topic input -->
     <div class="form-group">
         <label>Topic:</label>
         <input id="topic" value="engo651/tmp/my_temperature" placeholder="your_course/your_name/my_temperature">
-        <button id="share">Share My Status</button>
+        <button id="share" type="button" disabled>Share My Status</button>
     </div>
 
+    <!-- Shows connection status -->
     <div id="status"></div>
 
+    <!-- Map -->
     <div id="map"></div>
 
+    <!-- Button to center on user location -->
     <button id="locateBtn" title="Locate Me">📍 Locate Me</button>
 
+    <!-- Main app script -->
     <script src="script.js"></script>
 </body>
-
 </html>
