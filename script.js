@@ -13,17 +13,21 @@ const statusDiv = document.getElementById('status');
 startBtn.onclick = () => {
     if (isConnected) return;
 
-    const isSecurePage = window.location.protocol === "https:";
-    const useSSL = isSecurePage;
+    const useSSL = document.querySelector('input[name="ssl"]:checked').value === "true";
     const protocol = useSSL ? "wss" : "ws";
-    const port = useSSL ? 8081 : 8080;
     const host = hostInput.value;
+    const port = Number(portInput.value);
     const wsURL = `${protocol}://${host}:${port}/mqtt`;
+    if(!port || !host)
+    {   
+        showStatus("Provide all the details");
+        return;
 
-
+    }
     console.log("Trying to connect to:", wsURL);
 
     client = new Paho.MQTT.Client(wsURL, "clientId-" + Math.random().toString(36).substr(2, 9));
+    showStatus("Attempting to reconnect...");
 
     client.connect({
         onSuccess: () => {
@@ -36,47 +40,45 @@ startBtn.onclick = () => {
         onFailure: (err) => {
             console.error("❌ Connection failed:", err.errorMessage);
             showStatus("Connection failed. Retrying...");
-            reconnectTimeout = setTimeout(connectClient, 3000);
+            reconnectTimeout = setTimeout(() => connectClient(wsURL, useSSL), 3000);
         }
     });
 
-    client.onConnectionLost = (responseObject) => {
+    client.onConnectionLost = () => {
         showStatus("Connection lost. Attempting to reconnect...");
         isConnected = false;
-        reconnectTimeout = setTimeout(connectClient, 3000);
+        reconnectTimeout = setTimeout(() => connectClient(wsURL, useSSL), 3000);
     };
 
     client.onMessageArrived = onMessageArrived;
 
-
-    // connectClient(wsURL);
-
-    // Disable host and port input after connection
+    // Disable host and port inputs
     hostInput.disabled = true;
     portInput.disabled = true;
+    document.querySelectorAll('input[name="ssl"]').forEach(rb => rb.disabled = false);
+
 };
 
-function connectClient(wsURL) {
 
-    console.log("Trying to connect to:", wsURL);
+function connectClient(wsURL, useSSL) {
+    console.log("Reconnecting to:", wsURL);
 
     client.connect({
         onSuccess: () => {
-            console.log("✅ Connected!");
             isConnected = true;
             clearTimeout(reconnectTimeout);
-            showStatus("Connected!");
+            showStatus("Reconnected!");
             client.subscribe(topicInput.value);
         },
-        useSSL: port === 8081,
+        useSSL: useSSL,
         onFailure: (err) => {
-            console.error("❌ Connection failed:", err.errorMessage);
-            showStatus("Connection failed. Retrying...");
-            reconnectTimeout = setTimeout(connectClient, 3000);
+            console.error("Reconnection failed:", err.errorMessage);
+            showStatus("Retrying connection...");
+            reconnectTimeout = setTimeout(() => connectClient(wsURL, useSSL), 3000);
         }
     });
-
 }
+
 
 endBtn.onclick = () => {
     if (client && isConnected) {
