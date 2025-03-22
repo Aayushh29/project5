@@ -1,94 +1,132 @@
 let client;
 let isConnected = false;
+let reconnectTimeout = null;
 
-document.getElementById('start').onclick = () => {
-  const host = document.getElementById('host').value;
-  const port = Number(document.getElementById('port').value);
-  const clientId = "clientId-" + Math.random().toString(36).substr(2, 9);
+const hostInput = document.getElementById('host');
+const portInput = document.getElementById('port');
+const topicInput = document.getElementById('topic');
+const startBtn = document.getElementById('start');
+const endBtn = document.getElementById('end');
+const shareBtn = document.getElementById('share');
+const statusDiv = document.getElementById('status');
 
-  client = new Paho.MQTT.Client(host, port, clientId);
+startBtn.onclick = () => {
+    if (isConnected) return;
 
-  client.onConnectionLost = (responseObject) => {
-    showStatus("Connection lost. Reconnecting...");
+    const host = hostInput.value;
+    const port = Number(portInput.value);
+    const clientId = "clientId-" + Math.random().toString(36).substr(2, 9);
+
+    const wsURL = `ws://${host}:${port}/mqtt`; // required path!
+    client = new Paho.MQTT.Client(wsURL, clientId);
+
+    client.onConnectionLost = (responseObject) => {
+        showStatus("Connection lost. Attempting to reconnect...");
+        isConnected = false;
+        reconnectTimeout = setTimeout(connectClient, 3000);
+    };
+
+    client.onMessageArrived = onMessageArrived;
+
     connectClient();
-  };
 
-  client.onMessageArrived = onMessageArrived;
-
-  connectClient();
+    // Disable host and port input after connection
+    hostInput.disabled = true;
+    portInput.disabled = true;
 };
 
 function connectClient() {
-  client.connect({
-    onSuccess: () => {
-      isConnected = true;
-      showStatus("Connected!");
-      const topic = document.getElementById('topic').value;
-      client.subscribe(topic);
-    },
-    useSSL: false,
-    onFailure: () => showStatus("Connection failed.")
-  });
+    client.connect({
+        onSuccess: () => {
+            isConnected = true;            
+            clearTimeout(reconnectTimeout);
+            showStatus("Connected!");
+            const topic = topicInput.value;
+            client.subscribe(topic);
+        },
+        useSSL: false,
+        onFailure: () => {
+            showStatus("Connection failed. Retrying...");
+            reconnectTimeout = setTimeout(connectClient, 3000);
+        }
+    });
 }
 
-document.getElementById('end').onclick = () => {
-  if (client && isConnected) {
-    client.disconnect();
-    isConnected = false;
-    showStatus("Disconnected.");
-  }
+endBtn.onclick = () => {
+    if (client && isConnected) {
+        client.disconnect();
+        isConnected = false;
+        showStatus("Disconnected.");
+    }
+
+    // Enable host and port input again
+    hostInput.disabled = false;
+    portInput.disabled = false;
+    clearTimeout(reconnectTimeout);
 };
 
 function showStatus(message) {
-  document.getElementById('status').innerText = message;
+    statusDiv.innerText = message;
 }
 
-document.getElementById('share').onclick = () => {
+shareBtn.onclick = () => {
     if (!isConnected) return alert("Connect first!");
+    const topic = topicInput.value;
+
+    if (!topic.match(/^[a-zA-Z0-9_/-]+\/[a-zA-Z0-9_/-]+\/my_temperature$/)) {
+        alert("Please follow the topic format: course_code/name/my_temperature (with _ instead of space)");
+        return;
+    }
+
     navigator.geolocation.getCurrentPosition((position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      const temp = Math.floor(Math.random() * 100 - 40); // Range [-40, 60]
-      const topic = document.getElementById('topic').value;
-  
-      const geojson = {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [lon, lat]
-        },
-        properties: {
-          temperature: temp
-        }
-      };
-  
-      const message = new Paho.MQTT.Message(JSON.stringify(geojson));
-      message.destinationName = topic;
-      client.send(message);
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const temp = Math.floor(Math.random() * 100 - 40); // [-40, 60]
+        
+        const geojson = {
+            type: "Feature",
+            geometry: {
+                type: "Point",
+                coordinates: [lon, lat]
+            },
+            properties: {
+                temperature: temp
+            }
+        };
+
+        const message = new Paho.MQTT.Message(JSON.stringify(geojson));
+        message.destinationName = topic;
+        client.send(message);
+    }, () => {
+        alert("Unable to get location.");
     });
-  };
-  
-  const map = L.map('map').setView([0, 0], 2);
+};
+
+const map = L.map('map').setView([0, 0], 2);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 let marker;
 
 function onMessageArrived(message) {
-  const data = JSON.parse(message.payloadString);
-  const [lon, lat] = data.geometry.coordinates;
-  const temp = data.properties.temperature;
+    try {
+        const data = JSON.parse(message.payloadString);
+        const [lon, lat] = data.geometry.coordinates;
+        const temp = data.properties.temperature;
 
-  const color = temp < 10 ? "blue" : temp < 30 ? "green" : "red";
+        const color = temp < 10 ? "blue" : temp < 30 ? "green" : "red";
 
-  if (marker) map.removeLayer(marker);
-  marker = L.circleMarker([lat, lon], {
-    radius: 10,
-    color,
-    fillColor: color,
-    fillOpacity: 0.8
-  }).addTo(map)
-    .bindPopup(`Temperature: ${temp}°C`)
-    .openPopup();
+        if (marker) map.removeLayer(marker);
+        marker = L.circleMarker([lat, lon], {
+            radius: 10,
+            color,
+            fillColor: color,
+            fillOpacity: 0.8
+        }).addTo(map)
+            .bindPopup(`Temperature: ${temp}°C`)
+            .openPopup();
 
-  map.setView([lat, lon], 15);
+        map.setView([lat, lon], 15);
+    } catch (err) {
+        console.error("Invalid MQTT message received:", err);
+    }
 }
