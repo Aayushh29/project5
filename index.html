@@ -22,13 +22,13 @@
         <input id="port" value="8081" placeholder="8080">
 
         <div class="radio-group">
-            <label class="radio-label">
-                <input type="radio" name="ssl" value="false" > ws
-            </label>
-            <label class="radio-label">
-                <input type="radio" name="ssl" value="true" checked> wss
-            </label>
+            <input type="radio" id="ws" name="ssl" value="false">
+            <label class="radio-label" for="ws">ws</label>
+        
+            <input type="radio" id="wss" name="ssl" value="true" checked>
+            <label class="radio-label" for="wss">wss</label>
         </div>
+        
 
         <button id="start">Start</button>
         <button id="end">End</button>

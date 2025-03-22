@@ -66,31 +66,9 @@ button {
 button:hover {
     background-color: #0b7dda;
 }
-/* Make inputs/buttons expand on mobile */
-@media (max-width: 600px) {
-    .form-group {
-        flex-direction: column;
-        align-items: stretch;
-    }
 
-    input, button {
-        width: 90%;
-        max-width: 100%;
-    }
-
-    .radio-group {
-        flex-direction: column;
-        align-items: center;
-        width: 90%;
-    }
-
-    #locateBtn {
-        width: 90%;
-    }
-}
 .radio-group {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 10px;
@@ -98,4 +76,44 @@ button:hover {
     background-color: #e3f2fd;
     border: 1px solid #90caf9;
     border-radius: 6px;
+}
+
+.radio-group input[type="radio"] {
+    display: none;
+}
+
+.radio-label {
+    padding: 10px 20px;
+    border-radius: 20px;
+    background-color: #fff;
+    border: 2px solid #90caf9;
+    font-weight: bold;
+    color: #000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+input[type="radio"]:checked + .radio-label {
+    background-color: #2196F3;
+    color: white;
+    border-color: #1976d2;
+}
+
+@media (max-width: 600px) {
+    .form-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .radio-label {
+        width: 90%;
+        text-align: center;
+    }
+    input, button {
+        width: 90%;
+        max-width: 100%;
+    }
+
+    #locateBtn {
+        width: 90%;
+    }
 }
