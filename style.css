@@ -8,8 +8,27 @@ h2 {
     text-align: center;
     color: #333;
     font-size: 24px;
+    margin-bottom: 20px;
 }
-
+#status {
+    margin: 15px auto;
+    padding: 10px;
+    font-weight: bold;
+    color: white;
+    background-color: #4caf50;
+    text-align: center;
+    border-radius: 5px;
+    max-width: 90%;
+}
+#locateBtn {
+    display: block;
+    margin: 15px auto;
+    padding: 10px 18px;
+    font-size: 16px;
+}
+#status.error {
+    background-color: #f44336;
+}
 .form-group {
     display: flex;
     flex-wrap: wrap;
@@ -17,6 +36,8 @@ h2 {
     align-items: center;
     gap: 10px;
     margin-bottom: 15px;
+    text-align: center;
+    flex-direction: row;
 }
 
 input, button, label {
@@ -27,62 +48,58 @@ input {
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    margin:10px;
     min-width: 160px;
 }
-
 button {
     padding: 8px 12px;
     border: none;
     border-radius: 4px;
     background-color: #2196F3;
     color: white;
+    margin:20px;
+
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 button:hover {
     background-color: #0b7dda;
 }
+/* Make inputs/buttons expand on mobile */
+@media (max-width: 600px) {
+    .form-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
+    input, button {
+        width: 90%;
+        max-width: 100%;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .radio-label {
+        margin-bottom: 5px;
+    }
+
+    #locateBtn {
+        width: 90%;
+    }
+}
 .radio-group {
-    display: wrap;
-    align-items:center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
     background-color: #e3f2fd;
     border: 1px solid #90caf9;
     border-radius: 6px;
-}
-
-.radio-label {
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-}
-
-
-#status {
-    margin-top: 10px;
-    padding: 10px;
-    font-weight: bold;
-    color: white;
-    background-color: #4caf50; /* green background */
-    text-align: center;
-    border-radius: 5px;
-}
-
-#status.error {
-    background-color: #f44336; /* red for errors */
-}
-
-#map {
-    border: 2px solid #ccc;
-    border-radius: 5px;
-    width: 100%;
-    max-width: 100%;
-    height: 500px;
-}
-
-#locateBtn {
-    display: block;
-    margin: 15px auto;
-    padding: 10px 18px;
-    font-size: 16px;
 }
