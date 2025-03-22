@@ -13,12 +13,32 @@ const statusDiv = document.getElementById('status');
 startBtn.onclick = () => {
     if (isConnected) return;
 
+    const isSecurePage = window.location.protocol === "https:";
+    const useSSL = isSecurePage;
+    const protocol = useSSL ? "wss" : "ws";
+    const port = useSSL ? 8081 : 8080;
     const host = hostInput.value;
-    const port = Number(portInput.value);
-    const clientId = "clientId-" + Math.random().toString(36).substr(2, 9);
+    const wsURL = `${protocol}://${host}:${port}/mqtt`;
 
-    const wsURL = `ws://${host}:${port}/mqtt`; // required path!
-    client = new Paho.MQTT.Client(wsURL, clientId);
+
+    console.log("Trying to connect to:", wsURL);
+
+    client = new Paho.MQTT.Client(wsURL, "clientId-" + Math.random().toString(36).substr(2, 9));
+
+    client.connect({
+        onSuccess: () => {
+            isConnected = true;
+            clearTimeout(reconnectTimeout);
+            showStatus("Connected!");
+            client.subscribe(topicInput.value);
+        },
+        useSSL: useSSL,
+        onFailure: (err) => {
+            console.error("❌ Connection failed:", err.errorMessage);
+            showStatus("Connection failed. Retrying...");
+            reconnectTimeout = setTimeout(connectClient, 3000);
+        }
+    });
 
     client.onConnectionLost = (responseObject) => {
         showStatus("Connection lost. Attempting to reconnect...");
@@ -28,28 +48,34 @@ startBtn.onclick = () => {
 
     client.onMessageArrived = onMessageArrived;
 
-    connectClient();
+
+    // connectClient(wsURL);
 
     // Disable host and port input after connection
     hostInput.disabled = true;
     portInput.disabled = true;
 };
 
-function connectClient() {
+function connectClient(wsURL) {
+
+    console.log("Trying to connect to:", wsURL);
+
     client.connect({
         onSuccess: () => {
-            isConnected = true;            
+            console.log("✅ Connected!");
+            isConnected = true;
             clearTimeout(reconnectTimeout);
             showStatus("Connected!");
-            const topic = topicInput.value;
-            client.subscribe(topic);
+            client.subscribe(topicInput.value);
         },
-        useSSL: false,
-        onFailure: () => {
+        useSSL: port === 8081,
+        onFailure: (err) => {
+            console.error("❌ Connection failed:", err.errorMessage);
             showStatus("Connection failed. Retrying...");
             reconnectTimeout = setTimeout(connectClient, 3000);
         }
     });
+
 }
 
 endBtn.onclick = () => {
@@ -82,7 +108,7 @@ shareBtn.onclick = () => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
         const temp = Math.floor(Math.random() * 100 - 40); // [-40, 60]
-        
+
         const geojson = {
             type: "Feature",
             geometry: {
