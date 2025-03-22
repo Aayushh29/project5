@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IoT Geoweb App</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
@@ -13,32 +14,38 @@
 <body>
     <h2>MQTT IoT Geoweb App</h2>
 
-    <div>
-        <label>MQTT Host: </label><input id="host" placeholder="test.mosquitto.org">
-        <label>Port: </label><input id="port" placeholder="8080">
-        <label class="radio-label">
-            <input type="radio" name="ssl" value="false" checked> ws
-        </label>
-        <label class="radio-label">
-            <input type="radio" name="ssl" value="true"> wss
-        </label>
-    
+    <div class="form-group">
+        <label>MQTT Host:</label>
+        <input id="host" value="test.mosquitto.org" placeholder="test.mosquitto.org">
+
+        <label>Port:</label>
+        <input id="port" value="8080" placeholder="8080">
+
+        <div class="radio-group">
+            <label class="radio-label">
+                <input type="radio" name="ssl" value="false" checked> ws
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="ssl" value="true"> wss
+            </label>
+        </div>
+
         <button id="start">Start</button>
         <button id="end">End</button>
     </div>
 
-    <div>
-        <label>Topic: </label><input id="topic" placeholder="your_course/your_name/my_temperature">
+    <div class="form-group">
+        <label>Topic:</label>
+        <input id="topic" value="engo651/tmp/my_temperature" placeholder="your_course/your_name/my_temperature">
         <button id="share">Share My Status</button>
     </div>
-    
+
     <div id="status"></div>
 
     <div id="map" style="height: 500px; margin-top: 10px;"></div>
-    <button id="locateBtn" title="Locate Me">
-        📍 Locate Me
-    </button>
-    
+
+    <button id="locateBtn" title="Locate Me">📍 Locate Me</button>
+
     <script src="script.js"></script>
 </body>
 

@@ -20,7 +20,7 @@ startBtn.onclick = () => {
     const wsURL = `${protocol}://${host}:${port}/mqtt`;
     if(!port || !host)
     {   
-        showStatus("Provide all the details");
+        showStatus("Please provide accurate details");
         return;
 
     }
@@ -93,9 +93,11 @@ endBtn.onclick = () => {
     clearTimeout(reconnectTimeout);
 };
 
-function showStatus(message) {
+function showStatus(message, isError = false) {
     statusDiv.innerText = message;
+    statusDiv.className = isError ? "error" : "";
 }
+
 
 shareBtn.onclick = () => {
     if (!isConnected) return alert("Connect first!");
