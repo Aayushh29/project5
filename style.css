@@ -98,6 +98,13 @@ input[type="radio"]:checked + .radio-label {
     color: white;
     border-color: #1976d2;
 }
+#map {
+    height: 500px;
+    margin: 12px auto;
+    border: 1px solid black;
+    border-radius: 4px;
+    max-width: 90%;
+}
 
 @media (max-width: 600px) {
     .form-group {

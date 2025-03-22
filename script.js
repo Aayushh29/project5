@@ -18,8 +18,7 @@ startBtn.onclick = () => {
     const host = hostInput.value;
     const port = Number(portInput.value);
     const wsURL = `${protocol}://${host}:${port}/mqtt`;
-    if(!port || !host)
-    {   
+    if (!port || !host) {
         showStatus("Please provide accurate details");
         return;
 
@@ -90,6 +89,7 @@ endBtn.onclick = () => {
     // Enable host and port input again
     hostInput.disabled = false;
     portInput.disabled = false;
+    
     clearTimeout(reconnectTimeout);
 };
 
@@ -171,7 +171,7 @@ locateBtn.onclick = () => {
     navigator.geolocation.getCurrentPosition((position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-        
+
 
         // Removes previous user marker if exists
         if (userLocationMarker) {
