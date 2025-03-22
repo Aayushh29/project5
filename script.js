@@ -57,7 +57,9 @@ function setupClient(wsURL, useSSL) {
             isConnected = true;
             clearTimeout(reconnectTimeout);
             showStatus("Connected!");
-            client.subscribe(topicInput.value);
+
+            const topic = topicInput.value;
+            client.subscribe(topic); // Subscribes to <course>/<name>/my_temperature
         },
         useSSL: useSSL,
         onFailure: (err) => {
@@ -67,6 +69,7 @@ function setupClient(wsURL, useSSL) {
         }
     });
 }
+
 
 // Disconnects from MQTT broker
 endBtn.onclick = () => {
@@ -134,16 +137,26 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 let marker;
 
 // When a message arrives, plot it on the map
+// When a message arrives, show the sender's location and temperature on the map
 function onMessageArrived(message) {
     try {
         const data = JSON.parse(message.payloadString);
+
+        if (!data.geometry || !data.properties || !data.geometry.coordinates) {
+            console.warn("Message doesn't have expected GeoJSON structure.");
+            return;
+        }
+
         const [lon, lat] = data.geometry.coordinates;
         const temp = data.properties.temperature;
 
+        // Determine marker color based on temperature
         const color = temp < 10 ? "blue" : temp < 30 ? "green" : "red";
 
+        // Remove previous marker if it exists
         if (marker) map.removeLayer(marker);
 
+        // Add new temperature marker
         marker = L.circleMarker([lat, lon], {
             radius: 10,
             color,
@@ -153,9 +166,10 @@ function onMessageArrived(message) {
           .bindPopup(`Temperature: ${temp}°C`)
           .openPopup();
 
+        // Zoom in to location
         map.setView([lat, lon], 15);
     } catch (err) {
-        console.error("Invalid MQTT message received:", err);
+        console.error("Error processing incoming MQTT message:", err);
     }
 }
 
