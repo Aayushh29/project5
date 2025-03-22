@@ -158,3 +158,32 @@ function onMessageArrived(message) {
         console.error("Invalid MQTT message received:", err);
     }
 }
+const locateBtn = document.getElementById('locateBtn');
+let userLocationMarker;
+locateBtn.onclick = () => {
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition((position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+
+        // Removes previous user marker if exists
+        if (userLocationMarker) {
+            map.removeLayer(userLocationMarker);
+        }
+
+        // Add a new marker
+        userLocationMarker = L.marker([lat, lon]).addTo(map)
+            .bindPopup("📍 You are here")
+            .openPopup();
+
+        // Center map
+        map.setView([lat, lon], 15);
+    }, () => {
+        alert("Unable to retrieve your location.");
+    });
+};
